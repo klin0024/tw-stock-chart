@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>台積電 2330 走勢圖（6M）</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f5f5;color:#222;padding:16px}
+  h1{font-size:1.4rem;font-weight:700;margin-bottom:2px}
+  .subtitle{font-size:.85rem;color:#666;margin-bottom:16px}
+  .cards{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px}
+  .card{background:#fff;border-radius:8px;padding:12px 16px;min-width:130px;flex:1;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+  .card-label{font-size:.72rem;color:#888;margin-bottom:4px}
+  .card-value{font-size:1.3rem;font-weight:700}
+  .red{color:#d04a2a}.green{color:#1a7a5a}.orange{color:#ef9f27}.blue{color:#378add}
+  .legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin-bottom:10px;font-size:.75rem}
+  .legend-item{display:flex;align-items:center;gap:5px}
+  .legend-dot{width:12px;height:3px;border-radius:2px}
+  .chart-section{background:#fff;border-radius:8px;padding:14px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+  .chart-title{font-size:.78rem;color:#555;margin-bottom:8px;font-weight:600}
+  table{width:100%;border-collapse:collapse;font-size:.8rem;margin-top:8px}
+  th{background:#f0f0f0;padding:6px 8px;text-align:left;font-weight:600}
+  td{padding:5px 8px;border-bottom:1px solid #eee}
+  .note{font-size:.7rem;color:#999;margin-top:10px}
+  @media(prefers-color-scheme:dark){
+    body{background:#1a1a1a;color:#e0e0e0}
+    .card,.chart-section{background:#242424;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+    th{background:#333}td{border-bottom-color:#333}
+    .subtitle,.chart-title{color:#aaa}.card-label{color:#999}
+  }
+</style>
+</head>
+<body>
+<h1>台積電（2330）走勢圖</h1>
+<div class="subtitle">2025-12-22 ～ 2026-06-22 　共 117 個交易日</div>
+<div class="cards">
+  <div class="card"><div class="card-label">最新收盤價</div><div class="card-value red">2,510 元</div></div>
+  <div class="card"><div class="card-label">FactSet 目標價</div><div class="card-value orange">2,500 元</div></div>
+  <div class="card"><div class="card-label">距目標價空間</div><div class="card-value red">-0.40%</div></div>
+  <div class="card"><div class="card-label">追蹤分析師數</div><div class="card-value blue">36 位</div></div>
+  <div class="card"><div class="card-label">6 個月漲跌幅</div><div class="card-value green">+71.33%</div></div>
+</div>
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#378add"></div>收盤價</div>
+  <div class="legend-item"><div class="legend-dot" style="border-top:2px dashed #5dcaa5;background:none;height:0"></div>20MA</div>
+  <div class="legend-item"><div class="legend-dot" style="border-top:2px dashed #ef9f27;background:none;height:0"></div>FactSet目標價</div>
+  <div class="legend-item"><div class="legend-dot" style="background:rgba(55,138,221,0.7)"></div>外資累計</div>
+  <div class="legend-item"><div class="legend-dot" style="background:rgba(239,159,39,0.7)"></div>投信累計</div>
+  <div class="legend-item"><div class="legend-dot" style="background:rgba(93,202,165,0.7)"></div>自營商累計</div>
+  <div class="legend-item"><div class="legend-dot" style="background:rgba(208,74,42,0.85)"></div>三大合計累計</div>
+</div>
+<div class="chart-section"><div class="chart-title">股價走勢（含三大法人累計買賣超）</div><div style="position:relative;height:300px"><canvas id="priceChart"></canvas></div></div>
+<div class="chart-section"><div class="chart-title">每日成交量（百萬股）</div><div style="position:relative;height:100px"><canvas id="volChart"></canvas></div></div>
+<div class="chart-section"><div class="chart-title">三大法人累計買賣超（張）</div><div style="position:relative;height:160px"><canvas id="cumChart"></canvas></div></div>
+<div class="chart-section"><div class="chart-title">三大法人每日買賣超（張，堆疊）</div><div style="position:relative;height:160px"><canvas id="t86Chart"></canvas></div></div>
+<div class="chart-section">
+  <div class="chart-title">FactSet 目標價調整紀錄</div>
+  <table><thead><tr><th>日期</th><th>目標價中位數</th><th>分析師數</th><th>備註</th></tr></thead><tbody>
+    <tr><td>2026-01-16</td><td>2,088 元</td><td>35</td><td>目標價中位數由2000元調升至2088元（+4.4%）</td></tr>
+    <tr><td>2026-04-17</td><td>2,500 元</td><td>36</td><td>目標價中位數調升至2500元（+6.27%），法說會後上修</td></tr>
+  </tbody></table>
+  <div class="note">資料來源：鉅亨速報／FactSet，數據僅供參考，不作為投資建議。</div>
+</div>
+<script>
+const labels = ["12/22","12/23","12/24","12/26","12/29","12/30","12/31","1/02","1/05","1/06","1/07","1/08","1/09","1/12","1/13","1/14","1/15","1/16","1/19","1/20","1/21","1/22","1/23","1/26","1/27","1/28","1/29","1/30","2/02","2/03","2/04","2/05","2/06","2/09","2/10","2/11","2/23","2/24","2/25","2/26","3/02","3/03","3/04","3/05","3/06","3/09","3/10","3/11","3/12","3/13","3/16","3/17","3/18","3/19","3/20","3/23","3/24","3/25","3/26","3/27","3/30","3/31","4/01","4/02","4/07","4/08","4/09","4/10","4/13","4/14","4/15","4/16","4/17","4/20","4/21","4/22","4/23","4/24","4/27","4/28","4/29","4/30","5/04","5/05","5/06","5/07","5/08","5/11","5/12","5/13","5/14","5/15","5/18","5/19","5/20","5/21","5/22","5/25","5/26","5/27","5/28","5/29","6/01","6/02","6/03","6/04","6/05","6/08","6/09","6/10","6/11","6/12","6/15","6/16","6/17","6/18","6/22"];
+const closes = [1465,1490,1495,1510,1530,1520,1550,1585,1670,1705,1675,1685,1680,1690,1710,1710,1690,1740,1760,1775,1740,1760,1770,1755,1780,1820,1805,1775,1765,1800,1785,1765,1780,1815,1880,1915,1900,1965,2015,1995,1975,1935,1865,1900,1890,1810,1850,1940,1885,1865,1845,1870,1905,1850,1840,1810,1810,1845,1840,1820,1780,1760,1855,1810,1860,1950,1955,2000,1990,2055,2080,2085,2030,2025,2050,2050,2080,2185,2265,2215,2180,2135,2275,2250,2250,2310,2290,2235,2255,2220,2270,2265,2240,2205,2185,2230,2255,2310,2270,2300,2295,2355,2355,2380,2425,2385,2365,2295,2305,2255,2250,2310,2375,2400,2385,2410,2510];
+const volumes = [23.919,22.337,13.707,20.806,24.010,21.819,31.390,39.836,76.183,54.073,54.808,31.486,42.191,34.557,34.064,33.254,41.704,58.109,32.242,32.687,50.745,34.438,29.676,25.989,32.184,31.328,36.079,46.342,33.342,30.387,29.088,28.974,36.484,40.350,45.674,44.684,80.769,44.317,47.399,74.411,57.405,54.577,84.647,56.490,34.307,94.441,46.927,39.238,40.662,36.317,35.401,26.754,25.695,38.751,53.706,41.950,30.570,46.664,24.635,33.883,46.272,75.832,46.457,29.332,19.895,53.813,36.055,39.096,31.883,46.188,46.825,35.974,44.433,30.566,28.056,27.457,54.918,52.392,79.778,57.336,49.147,59.584,44.459,26.645,38.027,41.966,31.730,46.173,54.240,43.728,39.565,34.361,32.967,45.586,38.333,24.929,26.823,28.251,32.781,40.272,42.313,104.784,60.943,41.533,29.220,32.543,43.404,52.274,38.848,54.194,46.418,26.307,30.229,37.146,30.059,49.983,45.208];
+const t86Foreign = [7513,4730,-2144,2076,3091,-2181,-3242,-4399,-5543,-7990,-26817,-4178,-11454,-10256,-3082,-5844,-10350,10106,-8021,-5392,-18029,-5350,-4918,-4006,6704,7714,-8629,-13718,-9845,-2924,-9645,-9668,-6574,2919,12634,-4941,-17559,6887,-4192,-18137,-19539,-21195,-27354,-9756,-10927,-37837,-969,5027,-19046,-12743,-16174,-230,373,-22790,-6769,-15306,-5178,979,-5191,-11136,-15960,-20438,6181,-9386,5880,18393,722,8160,-1275,18955,4826,-2390,-9383,-3033,2210,-2132,7193,8306,-18940,-22114,-15783,-21183,9112,-8581,-4320,3885,-858,-17754,-9237,-11971,600,-3399,-9522,-17247,-11031,1014,733,4046,-7749,8811,-7079,13284,-3312,391,-104,-11256,-17840,-20465,-15008,-15543,-4904,3927,9647,-382,-6877,7516,14361];
+const t86Trust = [32,250,-124,406,372,-1281,1700,712,3437,957,944,567,-333,20,-135,1058,1281,208,-1064,-22,-3633,421,3364,-399,-285,664,15,450,2045,1083,840,1236,962,267,241,1141,2322,1486,2744,1202,2624,1279,1467,1494,946,2661,522,-36,283,-133,-802,-492,-144,-100,-4028,1861,691,265,548,381,558,1421,633,-193,421,452,-104,-175,-4823,615,-138,306,-2186,661,696,-742,754,1168,5284,861,1002,596,809,1496,1935,1433,1269,-54,8880,5474,5857,3386,6430,4144,2189,167,-465,4128,-597,1,-465,349,458,-68,648,538,2900,730,2660,-4,612,-149,86,3849,-317,-7268,-202];
+const t86Dealer = [770,133,-183,488,914,157,2933,1363,2021,-137,405,-198,672,188,118,941,1172,-1133,-1817,-836,-182,1311,230,21,281,386,280,-117,186,-11,428,-537,-1072,7,-431,1258,1908,1182,870,1264,514,897,799,118,866,-1627,-260,770,256,-353,661,905,721,451,-36,724,442,700,143,712,-439,2732,2463,136,91,1711,-497,375,53,653,244,1084,-270,-70,-77,-326,-1379,256,248,500,-358,115,378,-195,-213,148,108,-7,425,-589,-1289,-21,520,200,-712,423,188,97,98,371,466,420,922,462,227,1099,517,-214,-1254,-731,2909,-181,107,-158,895,37,1146];
+const dates = ["2025-12-22","2025-12-23","2025-12-24","2025-12-26","2025-12-29","2025-12-30","2025-12-31","2026-01-02","2026-01-05","2026-01-06","2026-01-07","2026-01-08","2026-01-09","2026-01-12","2026-01-13","2026-01-14","2026-01-15","2026-01-16","2026-01-19","2026-01-20","2026-01-21","2026-01-22","2026-01-23","2026-01-26","2026-01-27","2026-01-28","2026-01-29","2026-01-30","2026-02-02","2026-02-03","2026-02-04","2026-02-05","2026-02-06","2026-02-09","2026-02-10","2026-02-11","2026-02-23","2026-02-24","2026-02-25","2026-02-26","2026-03-02","2026-03-03","2026-03-04","2026-03-05","2026-03-06","2026-03-09","2026-03-10","2026-03-11","2026-03-12","2026-03-13","2026-03-16","2026-03-17","2026-03-18","2026-03-19","2026-03-20","2026-03-23","2026-03-24","2026-03-25","2026-03-26","2026-03-27","2026-03-30","2026-03-31","2026-04-01","2026-04-02","2026-04-07","2026-04-08","2026-04-09","2026-04-10","2026-04-13","2026-04-14","2026-04-15","2026-04-16","2026-04-17","2026-04-20","2026-04-21","2026-04-22","2026-04-23","2026-04-24","2026-04-27","2026-04-28","2026-04-29","2026-04-30","2026-05-04","2026-05-05","2026-05-06","2026-05-07","2026-05-08","2026-05-11","2026-05-12","2026-05-13","2026-05-14","2026-05-15","2026-05-18","2026-05-19","2026-05-20","2026-05-21","2026-05-22","2026-05-25","2026-05-26","2026-05-27","2026-05-28","2026-05-29","2026-06-01","2026-06-02","2026-06-03","2026-06-04","2026-06-05","2026-06-08","2026-06-09","2026-06-10","2026-06-11","2026-06-12","2026-06-15","2026-06-16","2026-06-17","2026-06-18","2026-06-22"];
+
+// 前 19 個收盤（11月最後 19 個交易日，用於計算 20MA）
+const prev19 = [1505,1460,1465,1460,1475,1465,1475,1460,1430,1445,1405,1395,1455,1385,1375,1415,1440,1435,1440];
+const allForMA = [...prev19, ...closes];
+const ma20 = closes.map((_, i) => {
+  const s = allForMA.slice(i, i + 20);
+  return Math.round(s.reduce((a,b)=>a+b,0)/20*10)/10;
+});
+
+const tpEvents = [{date:"2026-01-16",tp:2088},{date:"2026-04-17",tp:2500}];
+const tpLine = dates.map(d=>{let c=null;for(const e of tpEvents){if(e.date<=d)c=e.tp;}return c;});
+
+function cumsum(arr){let s=0;return arr.map(v=>{if(v!=null)s+=v;return v!=null?s:null;});}
+const cumForeign=cumsum(t86Foreign),cumTrust=cumsum(t86Trust),cumDealer=cumsum(t86Dealer);
+const dailyTotal=t86Foreign.map((f,i)=>f!=null?f+(t86Trust[i]??0)+(t86Dealer[i]??0):null);
+const cumTotal=cumsum(dailyTotal);
+
+const isDark=window.matchMedia('(prefers-color-scheme:dark)').matches;
+const gc=isDark?'rgba(255,255,255,0.08)':'rgba(0,0,0,0.06)',tc=isDark?'#aaa':'#666';
+const volC=closes.map((c,i)=>i===0?'rgba(208,71,42,0.5)':(c>=closes[i-1]?'rgba(208,71,42,0.5)':'rgba(26,122,90,0.5)'));
+function fmtK(v){if(v==null)return'';return Math.abs(v)>=1000?(v/1000).toFixed(1)+'K':String(v);}
+const baseOpts={responsive:true,maintainAspectRatio:false,animation:false,interaction:{mode:'index',intersect:false}};
+
+new Chart(document.getElementById('priceChart'),{data:{labels,datasets:[
+  {type:'line',label:'收盤價',data:closes,yAxisID:'yR',borderColor:'#378add',borderWidth:2,pointRadius:0,fill:true,backgroundColor:'rgba(55,138,221,0.08)',tension:0.1,order:2},
+  {type:'line',label:'20MA',data:ma20,yAxisID:'yR',borderColor:'#5dcaa5',borderWidth:1.5,borderDash:[4,3],pointRadius:0,fill:false,spanGaps:true,tension:0,order:3},
+  {type:'line',label:'FactSet目標價',data:tpLine,yAxisID:'yR',borderColor:'#ef9f27',borderWidth:1.5,borderDash:[6,3],pointRadius:tpLine.map((v,i)=>(i>0&&tpLine[i-1]!==v&&v!==null)?4:0),pointBackgroundColor:'#ef9f27',fill:false,stepped:true,spanGaps:true,tension:0,order:1},
+  {type:'line',label:'外資累計',data:cumForeign,yAxisID:'yL',borderColor:'rgba(55,138,221,0.7)',borderWidth:1.2,borderDash:[3,3],pointRadius:0,fill:false,spanGaps:true,tension:0,order:4},
+  {type:'line',label:'投信累計',data:cumTrust,yAxisID:'yL',borderColor:'rgba(239,159,39,0.7)',borderWidth:1.2,borderDash:[3,3],pointRadius:0,fill:false,spanGaps:true,tension:0,order:5},
+  {type:'line',label:'自營商累計',data:cumDealer,yAxisID:'yL',borderColor:'rgba(93,202,165,0.7)',borderWidth:1.2,borderDash:[3,3],pointRadius:0,fill:false,spanGaps:true,tension:0,order:6},
+  {type:'line',label:'三大合計累計',data:cumTotal,yAxisID:'yL',borderColor:'rgba(208,74,42,0.85)',borderWidth:1.8,borderDash:[5,3],pointRadius:0,fill:false,spanGaps:true,tension:0,order:7}
+]},options:{...baseOpts,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>{const v=ctx.raw;if(v==null)return null;return ctx.datasetIndex>=3?ctx.dataset.label+': '+fmtK(Math.round(v))+'張':ctx.dataset.label+': '+v+(ctx.datasetIndex===0?'元':'');}}}},scales:{x:{ticks:{color:tc,maxTicksLimit:12,maxRotation:0,font:{size:10}},grid:{color:gc}},yR:{position:'right',ticks:{color:tc,font:{size:10},callback:v=>v+'元'},grid:{color:gc}},yL:{position:'left',ticks:{color:tc,font:{size:10},callback:v=>Math.abs(v)>=1000?(v/1000).toFixed(0)+'K':v},grid:{display:false}}}}});
+new Chart(document.getElementById('volChart'),{data:{labels,datasets:[{type:'bar',label:'成交量',data:volumes,backgroundColor:volC,barPercentage:0.9,categoryPercentage:1}]},options:{...baseOpts,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.raw.toFixed(1)+'M股'}}},scales:{x:{ticks:{display:false},grid:{display:false}},y:{ticks:{color:tc,font:{size:10},callback:v=>v+'M'},grid:{color:gc},position:'right'}}}});
+new Chart(document.getElementById('cumChart'),{data:{labels,datasets:[
+  {type:'line',label:'外資累計',data:cumForeign,borderColor:'rgba(55,138,221,0.85)',borderWidth:1.5,pointRadius:0,fill:false,spanGaps:true,tension:0},
+  {type:'line',label:'投信累計',data:cumTrust,borderColor:'rgba(239,159,39,0.85)',borderWidth:1.5,pointRadius:0,fill:false,spanGaps:true,tension:0},
+  {type:'line',label:'自營商累計',data:cumDealer,borderColor:'rgba(93,202,165,0.85)',borderWidth:1.5,pointRadius:0,fill:false,spanGaps:true,tension:0},
+  {type:'line',label:'三大合計',data:cumTotal,borderColor:'rgba(208,74,42,0.9)',borderWidth:2,pointRadius:0,fill:false,spanGaps:true,tension:0}
+]},options:{...baseOpts,plugins:{legend:{labels:{font:{size:10},color:tc,boxWidth:12}}},scales:{x:{ticks:{color:tc,maxTicksLimit:12,font:{size:10},maxRotation:0},grid:{color:gc}},y:{ticks:{color:tc,font:{size:10},callback:v=>Math.abs(v)>=1000?(v/1000).toFixed(0)+'K':v},grid:{color:gc},position:'right'}}}});
+new Chart(document.getElementById('t86Chart'),{data:{labels,datasets:[
+  {type:'bar',label:'外資',data:t86Foreign,backgroundColor:'rgba(55,138,221,0.75)',stack:'s'},
+  {type:'bar',label:'投信',data:t86Trust,backgroundColor:'rgba(239,159,39,0.75)',stack:'s'},
+  {type:'bar',label:'自營商',data:t86Dealer,backgroundColor:'rgba(93,202,165,0.75)',stack:'s'}
+]},options:{...baseOpts,plugins:{legend:{labels:{font:{size:10},color:tc,boxWidth:12}}},scales:{x:{ticks:{color:tc,maxTicksLimit:12,font:{size:10},maxRotation:0},grid:{color:gc},stacked:true},y:{ticks:{color:tc,font:{size:10},callback:v=>Math.abs(v)>=1000?(v/1000).toFixed(0)+'K':v},grid:{color:gc},position:'right',stacked:true}}}});
+</script>
+</body>
+</html>
